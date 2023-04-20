@@ -4,6 +4,7 @@ import './App.css';
 function Table({ rowData, columns, rowsPerPage, sortableColumns}) {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleSort = (column) => {
     if (sortableColumns.includes(column)) { // Check if clicked column is sortable
@@ -18,13 +19,20 @@ function Table({ rowData, columns, rowsPerPage, sortableColumns}) {
   const sortedData = () => {
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
-    const rowsToShow = rowData.slice(startIndex, endIndex);
+    const rowsToShow = rowData
+      .filter((row) =>
+        Object.values(row)
+          .join(' ')
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
+      )
+      .slice(startIndex, endIndex);
   
     return rowsToShow.sort((a, b) => {
       const column = sortConfig.key;
       let valueA = a[column];
       let valueB = b[column];
-      
+  
       // check if column data is a string date
       if (typeof a[column] === 'string' && isNaN(Date.parse(a[column])) === false) {
         valueA = new Date(a[column]);
@@ -32,7 +40,7 @@ function Table({ rowData, columns, rowsPerPage, sortableColumns}) {
       if (typeof b[column] === 'string' && isNaN(Date.parse(b[column])) === false) {
         valueB = new Date(b[column]);
       }
-      console.log(valueA, valueB);
+  
       if (valueA < valueB) {
         return sortConfig.direction === 'ascending' ? -1 : 1;
       }
@@ -42,6 +50,7 @@ function Table({ rowData, columns, rowsPerPage, sortableColumns}) {
       return 0;
     });
   };
+  
   
 
   const pageCount = Math.ceil(rowData.length / rowsPerPage);
@@ -75,6 +84,7 @@ function Table({ rowData, columns, rowsPerPage, sortableColumns}) {
       );
     });
   };
+  
 
   const paginationButtons = () => {
     const buttons = [];
@@ -90,6 +100,13 @@ function Table({ rowData, columns, rowsPerPage, sortableColumns}) {
 
   return (
     <div>
+      <input
+  type="text"
+  placeholder="Search..."
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+/>
+
       <table className="table">
         <thead>
           <tr>{ThData()}</tr>
