@@ -84,4 +84,68 @@ button {
 button:hover {
   background-color: #ddd;
 }
+.tableWrapper {
+  height: 100%;
+  padding: 20px;
+  overflow: auto;
+  flex: 1;
+  margin: 0;
+}
 
+.tableContainer {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 388px;
+  border: var(--rgt-border);
+}
+ 
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  font-weight: 500;
+  background: var(--rgt-background-color);
+  z-index: 1;
+  border-top: var(--rgt-border);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.tablePagination{
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 20px;
+  white-space: nowrap;
+}
+
+.hidden {
+  display: none;
+}
+
+.popupButton {
+  position: absolute;
+  right: 25px;
+  cursor: pointer;
+  font-size: 28px;
+}
+
+.popupContent {
+  position: absolute;
+  top: 40px;
+  right: 10px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  z-index: 1;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.popupContent label {
+  margin-left: 5px;
+}
