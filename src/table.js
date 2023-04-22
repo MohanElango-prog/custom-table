@@ -13,12 +13,17 @@ function Table({ rowData, columns, sortableColumns }) {
     setShowPopup(!showPopup);
   };
 
-  const visibility = (column) => {
-    if (toggleColumns && toggleColumns.includes(column)) {
-      return 'visible';
+  const handleToggleColumn = (col) => {
+    if (toggleColumns.includes(col)) {
+      // Remove column from toggleColumns if it exists
+      setToggleColumns(toggleColumns.filter((column) => column !== col));
+    } else {
+      // Add column to toggleColumns if it doesn't exist
+      setToggleColumns([...toggleColumns, col]);
     }
-    return 'hidden';
+    console.log(toggleColumns);
   };
+  
 
   const popupContent = (
     <div className="popupContent">
@@ -29,17 +34,13 @@ function Table({ rowData, columns, sortableColumns }) {
             id={col}
             name={col}
             checked={!toggleColumns || toggleColumns.includes(col)}
-            onChange={() =>
-              setToggleColumns(
-              )
-            }
+            onChange={() => handleToggleColumn(col)}
           />
           <label htmlFor={col}>{col}</label>
         </div>
       ))}
     </div>
   );
-  
 
   const pageCount = Math.ceil(rowData.length / rowsPerPage);
 
@@ -94,7 +95,7 @@ function Table({ rowData, columns, sortableColumns }) {
   };
 
   const ThData = () => {
-    return columns.map((col, ind) => {
+    return toggleColumns.map((col, ind) => {
       return (
         <th key={ind} onClick={() => handleSort(col)}>
           {col}
@@ -111,7 +112,7 @@ function Table({ rowData, columns, sortableColumns }) {
     return sortedData().map((item, index) => {
       return (
         <tr key={index}>
-          {columns.map((v, i) => {
+          {toggleColumns.map((v, i) => {
             return <td key={i}>{item[v]}</td>;
           })}
         </tr>
