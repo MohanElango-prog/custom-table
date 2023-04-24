@@ -8,6 +8,8 @@ function Table({ rowData, columns, sortableColumns }) {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showPopup, setShowPopup] = useState(false);
   const [toggleColumns, setToggleColumns] = useState(columns);
+  const [editIndex, setEditIndex] = useState(-1);
+  const [sortData, setSortedData] = useState(rowData);
 
   const handlePopupClick = () => {
     setShowPopup(!showPopup);
@@ -23,7 +25,7 @@ function Table({ rowData, columns, sortableColumns }) {
     }
     console.log(toggleColumns);
   };
-  
+
 
   const popupContent = (
     <div className="popupContent">
@@ -42,7 +44,7 @@ function Table({ rowData, columns, sortableColumns }) {
     </div>
   );
 
-  const pageCount = Math.ceil(rowData.length / rowsPerPage);
+  const pageCount = Math.ceil(sortData.length / rowsPerPage);
 
   const handleSort = (column) => {
     if (sortableColumns.includes(column)) { // Check if clicked column is sortable
@@ -57,7 +59,7 @@ function Table({ rowData, columns, sortableColumns }) {
   const sortedData = () => {
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
-    const rowsToShow = rowData
+    const rowsToShow = sortData
       .filter((row) =>
         Object.values(row)
           .join(' ')
@@ -94,8 +96,16 @@ function Table({ rowData, columns, sortableColumns }) {
     setCurrentPage(pageNum);
   };
 
-  const ThData = () => {
-    return toggleColumns.map((col, ind) => {
+const ThData = () => {
+  const columns = [...toggleColumns, 'Actions']; // Add 'Actions' to the columns array
+  return columns.map((col, ind) => {
+    if (col === 'Actions') {
+      return (
+        <th key={ind}>
+          Actions
+        </th>
+      );
+    } else {
       return (
         <th key={ind} onClick={() => handleSort(col)}>
           {col}
@@ -104,20 +114,59 @@ function Table({ rowData, columns, sortableColumns }) {
           )}
         </th>
       );
-    });
-  };
+    }
+  });
+};
+
 
 
   const tdData = () => {
     return sortedData().map((item, index) => {
-      return (
-        <tr key={index}>
-          {toggleColumns.map((v, i) => {
-            return <td key={i}>{item[v]}</td>;
-          })}
-        </tr>
-      );
+      if (editIndex === index) {
+        // Render editable row if index matches editIndex state
+        return (
+          <tr key={index}>
+            {toggleColumns.map((v, i) => (
+              <td key={i}>
+                <input
+                  type="text"
+                  value={item[v]}
+                  onChange={(e) => handleEdit(index, v, e.target.value)}
+                />
+              </td>
+            ))}
+            <td>
+              <button onClick={() => handleSave(index)}>Save</button>
+              <button onClick={() => setEditIndex(-1)}>Cancel</button>
+            </td>
+          </tr>
+        );
+      } else {
+        // Render normal row if index doesn't match editIndex state
+        return (
+          <tr key={index}>
+            {toggleColumns.map((v, i) => (
+              <td key={i}>{item[v]}</td>
+            ))}
+            <td>
+              <button onClick={() => setEditIndex(index)}>Edit</button>
+            </td>
+          </tr>
+        );
+      }
     });
+  };
+
+  const handleEdit = (index, field, value) => {
+    // Update the data for the editable row
+    const newData = [...sortedData()];
+    newData[index][field] = value;
+    setSortedData(newData);
+  };
+
+  const handleSave = (index) => {
+    // Save the data and reset the editIndex state
+    setEditIndex(-1);
   };
 
 
@@ -136,24 +185,24 @@ function Table({ rowData, columns, sortableColumns }) {
   return (
     <div className="tableWrapper">
       <div className="tableContainer">
-      <input
-  type="text"
-  placeholder="Search..."
-  value={searchQuery}
-  onChange={(e) => setSearchQuery(e.target.value)}
-  style={{
-    padding: '10px',
-    fontSize: '16px',
-    border: '1px solid #ccc',
-    outline: 'none',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    paddingRight: '30px', // Add right padding for the dots
-  }}
-/>
-<span className="popupButton" onClick={handlePopupClick}>
-  &#8942;
-</span>
-{showPopup && popupContent}
+        <input
+          type="text"
+          placeholder="Search..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{
+            padding: '10px',
+            fontSize: '16px',
+            border: '1px solid #ccc',
+            outline: 'none',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+            paddingRight: '30px', // Add right padding for the dots
+          }}
+        />
+        <span className="popupButton" onClick={handlePopupClick}>
+          &#8942;
+        </span>
+        {showPopup && popupContent}
 
         <table className="table">
           <thead>
@@ -161,10 +210,10 @@ function Table({ rowData, columns, sortableColumns }) {
           </thead>
           <tbody>{tdData()}</tbody>
         </table>
-        <div className= "pagination">
-          <div clasName = "tableDet">
+        <div className="pagination">
+          <div clasName="tableDet">
             <span>Page {currentPage} of {pageCount}</span>
-            <span style={{ marginLeft: '10px' }}>Showing {rowsPerPage * currentPage} of {rowData.length} entries</span>
+            <span style={{ marginLeft: '10px' }}>Showing {rowsPerPage * currentPage} of {sortData.length} entries</span>
           </div>
           <div className="paginationButtons">
             <button onClick={() => handlePageClick(1)}>First</button>
