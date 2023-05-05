@@ -55,7 +55,10 @@ th {
 }
 
 th:hover {
-  cursor: pointer;
+  /* cursor: pointer; */
+  /* cursor: -webkit-grab;
+  cursor: -moz-grab;
+  cursor: grab; */
 }
 
 th span {
@@ -153,3 +156,15 @@ button:hover {
 .table tr:nth-child(even){background-color: #f2f2f2;}
 
 .table tr:hover {background-color: #ddd;}
+
+.draggableColumns {
+  cursor: -webkit-grab;
+  cursor: -moz-grab;
+  cursor: grab;
+}
+
+.draggableColumns:active{
+  cursor: -webkit-grabbing;
+  cursor: -moz-grabbing;
+  cursor: grabbing;
+}
