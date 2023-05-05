@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import './App.css';
 
 function Table({ rowData, columns, sortableColumns }) {
@@ -14,6 +14,32 @@ function Table({ rowData, columns, sortableColumns }) {
   const handlePopupClick = () => {
     setShowPopup(!showPopup);
   };
+  
+  /*DRAGGABLE COLUMN FEATURE*/
+  const draggingColumn = useRef();
+  const draggingOverColumn = useRef();
+  const handleColumnDrag=(e,position)=>{
+    draggingColumn.current = position;
+  }
+  const handleColumnDragEnter=(e,position)=>{
+    e.dataTransfer.dropEffect = "copy";
+    draggingOverColumn.current = position;
+  }
+  
+  const handleColumnDragEnd=(e)=>{
+    let columnsCopy = toggleColumns.slice();
+    const draggedColumnName = columnsCopy[draggingColumn.current];
+    //remove dragged column from it's current position
+    columnsCopy.splice(draggingColumn.current,1);
+    //insert the dragged column at desired position
+    columnsCopy.splice(draggingOverColumn.current,0,draggedColumnName);
+    draggingColumn.current = null;
+    draggingOverColumn.current = null;
+    setToggleColumns(columnsCopy);
+
+  }
+
+  /*DRAGGABLE COLUMN FEATURE*/
 
   const handleToggleColumn = (col) => {
     if (toggleColumns.includes(col)) {
@@ -21,9 +47,14 @@ function Table({ rowData, columns, sortableColumns }) {
       setToggleColumns(toggleColumns.filter((column) => column !== col));
     } else {
       // Add column to toggleColumns if it doesn't exist
-      setToggleColumns([...toggleColumns, col]);
+      // setToggleColumns([...toggleColumns, col]);
+
+      //insert column at the original position
+      let columnIndex = columns.indexOf(col);
+      let toggleColumnsCopy = toggleColumns.slice();
+      toggleColumnsCopy.splice(columnIndex,0,col)
+      setToggleColumns(toggleColumnsCopy);
     }
-    console.log(toggleColumns);
   };
 
 
@@ -67,7 +98,6 @@ function Table({ rowData, columns, sortableColumns }) {
           .includes(searchQuery.toLowerCase())
       )
       .slice(startIndex, endIndex);
-    console.log(rowsToShow);
 
     return rowsToShow.sort((a, b) => {
       const column = sortConfig.key;
@@ -107,7 +137,13 @@ const ThData = () => {
       );
     } else {
       return (
-        <th key={ind} onClick={() => handleSort(col)}>
+        <th key={ind} onClick={() => handleSort(col)} draggable={true} 
+        onDragStart={(e)=>handleColumnDrag(e,ind)}
+        onDragEnter={(e)=>handleColumnDragEnter(e,ind)}
+        onDragEnd={handleColumnDragEnd}
+        onDragOver={(e)=>e.preventDefault()}  // to allow drop event in cursor
+        className='draggableColumns'
+        >
           {col}
           {sortConfig && sortConfig.key === col && (
             <span>{sortConfig.direction === 'ascending' ? ' ▲' : ' ▼'}</span>
@@ -174,7 +210,7 @@ const ThData = () => {
     const buttons = [];
     for (let i = 1; i <= pageCount; i++) {
       buttons.push(
-        <button key={i} onClick={() => handlePageClick(i)}>
+        <button key={i} onClick={() => handlePageClick(i)} style={{backgroundColor: currentPage  === i ? '#727171' : null}}>
           {i}
         </button>
       );
@@ -211,7 +247,7 @@ const ThData = () => {
           <tbody>{tdData()}</tbody>
         </table>
         <div className="pagination">
-          <div clasName="tableDet">
+          <div className="tableDet">
             <span>Page {currentPage} of {pageCount}</span>
             <span style={{ marginLeft: '10px' }}>Showing {rowsPerPage * currentPage} of {sortData.length} entries</span>
           </div>
